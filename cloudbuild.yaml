@@ -1,0 +1,24 @@
+steps:
+  - id: test
+    name: maven:3.6.3-adoptopenjdk-15
+    entrypoint: mvn
+    args: ['verify']
+  - id: build-image
+    name: maven:3.6.3-adoptopenjdk-15
+    entrypoint: mvn
+    args: ['compile', 'jib:build', '-Djib.to.image=eu.gcr.io/trv-hs-matching-playground/measurements-provider:$TAG_NAME']
+  - id: deploy
+    name: gcr.io/cloud-builders/gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'measurements-provider'
+      - '--platform'
+      - 'managed'
+      - '--project'
+      - '$PROJECT_ID'
+      - '--region'
+      - 'europe-west4'
+      - '--image'
+      - 'eu.gcr.io/trv-hs-matching-playground/measurements-provider:$TAG_NAME'
+      - '--allow-unauthenticated'
